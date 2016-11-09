@@ -1,0 +1,14 @@
+# execlude these type of filepaths from sync
+- *.log
+- *.pyc
+- .DS_Store
+
+# Any thing which need to be temporally disabled to speed up sync on vpn
+
+# stuff which need be synced
+# Below line will sync a directory 'wk' and its sub dirs
+#+ wk/***
+
+# If you want to be selective about what you sync add root directroy name above and enable below lines
+#+ /*
+#- *

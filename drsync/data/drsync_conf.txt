@@ -1,0 +1,44 @@
+[global]
+# Some nice rsync default flags
+# Explanation of important flags
+# a - archive mode
+# z - enable compression, disable it when doing liveSync
+# v - add verbosity
+# S - handles sparse files better
+# h - outputs human friendly stats
+# i - itemize change summary for all updates
+# e - remote shell to use
+#      'ssh -M', will improve speed during liveSync
+# c - skip files based on checksum and not mod-time and size
+#     This might slowdown liveSync
+# q - quite mode less output
+# n - dry run, no actual changes
+# u - skip files which are newer on destination
+# --no-whole-file send changed blocks only
+# --progress show progress during transfer
+# --delete delete files on destination which do not exists locally
+# --force delete directory even if the are not empty
+
+rsyncOpt = -e 'ssh -M' --progress --no-whole-file --delete --force -aSuvih
+
+# rsync ignore file
+rsyncFilter = . {dir_profile}/rsyncfilter
+
+# This will be synced whenever we have directory sync automatically
+ignoreList = .idea,.hg
+
+[localHost]
+
+# Full path of parent directory of local_dir
+local_path = {working_dir_parent}/
+
+# Just directory name no slashes
+local_dir = {working_dir_name}
+
+[remoteHost]
+
+# Parent directory which will contain local_dir
+remote_path = {remote_working_dir_parent}/
+
+# user@hostname of the remote system
+remote_host = root@{remote_host_name}

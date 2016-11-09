@@ -1,0 +1,3 @@
+WARNING !!!!
+    Start with 'sendtest' and 'gettest' and review what will be done.
+    Adjust rsyncfilter and wksync.conf file and re-test until desired behaviour is achived
