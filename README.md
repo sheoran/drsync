@@ -1,5 +1,5 @@
-# DSYNC
-Directory Sync (dsync) helps you keep two directories separated by network in sync. 
+# DRSYNC
+Directory Sync (drsync) helps you keep two directories separated by network in sync. 
  * A very thin wrapper around rsync
  * Built to keep a portable development environment in mind and is greatly inspired by tools like ```git```, ```mercurial```.
  * It have two way on demand sync.
@@ -10,7 +10,7 @@ Directory Sync (dsync) helps you keep two directories separated by network in sy
  1. Keep a close to real time/ on demand backup of a directory somewhere remote
  
 # Install
-    pip install dsync
+    pip install drsync
 
 # How to Use
  1. Go to desired directory and run ```drsync -r```. 
@@ -20,7 +20,7 @@ Directory Sync (dsync) helps you keep two directories separated by network in sy
     1. copy files from you pip install site_packages. 
     ```
     example:
-     cp ../python2.7/site-packages/dsync/dsync/data/*.txt ~/.dsync/
+     cp ../python2.7/site-packages/dsync/dsync/data/*.txt ~/.drsync/
     ```
 
 # Caution
