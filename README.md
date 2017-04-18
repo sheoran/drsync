@@ -1,8 +1,8 @@
 # DRSYNC
 Directory Sync (drsync) helps you keep two directories separated by network in sync. 
- * A very thin wrapper around rsync
- * Built to keep a portable development environment in mind and is greatly inspired by tools like ```git```, ```mercurial```.
- * It have two way on demand sync.
+ * Very thin wrapper around rsync
+ * Built to keep a portable development environment in mind and is greatly inspired by tools like ```git```, ```mercurial```
+ * Two way on demand sync
  * Supports one way live stream of changes
 
 # Use Case Solved
