@@ -1,11 +1,13 @@
 __author__ = 'dsheoran'
 
-import logging
-import os, time
 import ConfigParser
+import logging
+import os
 import threading
-from watchdog.observers import Observer
+import time
+
 from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 
 # globals: 'sync' is prefix to avoid collision with other stuff
 sync_config_parser = sync_config_file = sync_rsync_opt = sync_rsync_filter = sync_ignore_list = \
@@ -110,7 +112,7 @@ def sync_helper():
         logging.info(sync_file_change_list_queue)
 
         if len(sync_file_change_list_queue) > 10:
-            sync_all()
+            sync_all(False)
             sync_file_change_list_queue.clear()
             return
 
@@ -129,7 +131,7 @@ def sync_helper():
                 return
 
             if not os.path.exists(filename):
-                sync_all()
+                sync_all(False)
                 sync_file_change_list_queue.clear()
                 return
 
