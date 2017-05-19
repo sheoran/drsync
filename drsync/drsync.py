@@ -72,7 +72,7 @@ class Drsync:
 
         # Add default and convert data types if needed
         args.loglevel = int(args.loglevel)
-        args.path = args.path if args.path else os.path.abspath((os.getcwd()))
+        args.path = os.path.abspath(args.path).rstrip('/') if args.path else os.path.abspath((os.getcwd()))
 
         logging.root.setLevel(args.loglevel)
         # register given directory
@@ -127,6 +127,8 @@ class Drsync:
             'Enter <user>@<host>:<path>, where path is parent directory where directory to  be synced will be created:')
 
         remote_host, remote_working_dir_parent = host_path.rsplit(':')
+        remote_working_dir_parent = remote_working_dir_parent.rstrip('/')
+
         sync_task_name = raw_input("Enter a name which you would like to identify above path as sync_task:")
 
         dir_profile = WK_SYN_DIR_FORMAT.format(
