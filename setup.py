@@ -16,7 +16,7 @@ here = path.abspath(path.dirname(__file__))
 
 setup(
     name='drsync',
-    version='2.0.1',
+    version='2.0.2',
 
     description='Syncs directories across systems',
     url='https://github.com/sheoran/drsync',
