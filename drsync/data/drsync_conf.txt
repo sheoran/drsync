@@ -41,4 +41,4 @@ local_dir = {working_dir_name}
 remote_path = {remote_working_dir_parent}/
 
 # user@hostname of the remote system
-remote_host = root@{remote_host_name}
+remote_host = {remote_host_name}

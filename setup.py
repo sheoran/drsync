@@ -8,14 +8,15 @@ https://github.com/pypa/sampleproject
 Deepak Sheoran: Customized for the need of this project
 """
 
-from setuptools import setup, find_packages
 from os import path
+
+from setuptools import find_packages, setup
 
 here = path.abspath(path.dirname(__file__))
 
 setup(
     name='drsync',
-    version='1.0.1',
+    version='2.0.1',
 
     description='Syncs directories across systems',
     url='https://github.com/sheoran/drsync',
@@ -33,7 +34,7 @@ setup(
     ],
     keywords='development tool rsync',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    install_requires=['plumbum', 'watchdog'],
+    install_requires=['watchdog', 'dotmap', 'docopts'],
     package_data={
         'drsync.data': ['drsync_conf.txt', 'post_reg_msg.txt', 'rsync_filter.txt']
     },

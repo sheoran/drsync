@@ -1,10 +1,32 @@
+"""Drsync.
+
+Usage:
+    drsync (-r | --lr ) [--loglevel LEVEL | -p PATH]
+    drsync (-s | -S | -f | -F | -l) [--loglevel LEVEL | -p PATH] SYNCLOCAITON
+
+Options:
+    -r --register       Register a new sync location
+    --lr                List registered sync location
+    -l --livesync       Send local changes in realtime
+    -s --send           Send local changes
+    -S --sendtest       Send local changes test only
+    -f --fetch          Fetch remote changes
+    -F --fetchtest      Fetch remote changes test only
+
+    --loglevel LEVEL    Set logging level [default: 20]
+    -p PATH --path      Override which directory will be synced, default is current directory
+    -h --help           Show this screen
+"""
+from dotmap import DotMap
+
 __author__ = 'dsheoran'
 
 import hashlib
 import logging
 import os
-from plumbum import cli
-from plumbum.cmd import pwd, mkdir
+
+from docopt import docopt
+
 from .sync import sync
 
 # Globals
@@ -35,114 +57,103 @@ def get_file_content(filename):
     raise RuntimeError("Invalid filename given or doesn't exists, filename: {}".format(filename))
 
 
-class Drsync(cli.Application):
+class Drsync:
     """
     Syncs directories between hosts
     """
 
-    register = cli.Flag(['r', 'register'],
-                        help='Register given directory with drsync',
-                        group='Mutually Exclusive')
-    livesync = cli.Flag(['l', 'livesync'],
-                        help='Sync local changes real time to remote directory',
-                        group='Mutually Exclusive')
-
-    send = cli.Flag(['s', 'send'],
-                    help='Sync local changes to remote',
-                    default=False,
-                    group='Mutually Exclusive')
-
-    send_test = cli.Flag(['S', 'sendtest'],
-                         help='Show what will be sent',
-                         default=False,
-                         group='Mutually Exclusive')
-
-    get = cli.Flag(['g', 'get'],
-                   help='Sync remote changes to local',
-                   default=False,
-                   group='Mutually Exclusive')
-
-    get_test = cli.Flag(['G', 'gettest'],
-                        help='Show what will be fetched',
-                        default=False,
-                        group='Mutually Exclusive')
-
-    working_dir = cli.SwitchAttr(['p', 'path'],
-                                 str,
-                                 default=str(os.path.abspath((pwd().strip()))),
-                                 help='Override which directory will be synced',
-                                 group='Mutually Exclusive')
-
-    log_level = cli.SwitchAttr(['loglevel'],
-                               int,
-                               default=20,
-                               help="Set logging level",
-                               group='Optional')
-
     def main(self):
-        # init
-        logging.root.setLevel(self.log_level)
-        self.working_dir = os.path.abspath(self.working_dir)
-        dir_profile = WK_SYN_DIR_FORMAT.format(USER_HOME,
-                                               WK_BASE_DIR,
-                                               os.path.split(self.working_dir)[1],
-                                               hashlib.md5(self.working_dir).hexdigest()
-                                               )
-        rsync_filter_file = WK_RSYNC_FILTER_FILE.format(dir_profile)
-        wk_conf_file = WK_CONF_FILE.format(dir_profile)
+        arguments = docopt(__doc__)
 
+        # convert args to dotmap
+        args = DotMap(_dynamic=False)
+        for k, v in arguments.iteritems():
+            args[k.replace('--', '')] = v
+
+        # Add default and convert data types if needed
+        args.loglevel = int(args.loglevel)
+        args.path = args.path if args.path else os.path.abspath((os.getcwd()))
+
+        logging.root.setLevel(args.loglevel)
         # register given directory
-        if self.register:
-            if not os.path.exists(dir_profile):
-                self.register_directory(dir_profile, rsync_filter_file, wk_conf_file)
-                return
+        if args.register:
+            self.register_directory(args)
+            exit(0)
 
-            logging.error("Directory {} is registered,config can be found at {}".format(
-                self.working_dir,
-                dir_profile
-            ))
-
-        elif not os.path.exists(dir_profile):
-
+        working_dir = args.path
+        dir_profile = WK_SYN_DIR_FORMAT.format(
+            USER_HOME,
+            WK_BASE_DIR,
+            os.path.split(working_dir)[1],
+            hashlib.md5(working_dir).hexdigest()
+        )
+        if not os.path.exists(dir_profile):
             logging.error(
-                "Directory {} is not registered with drsync, run with '-r' to register".format(self.working_dir))
-            return
+                "Directory {} is not registered with drsync, run with '-r' to register".format(working_dir))
+            exit(1)
+
+        if args.lr:
+            logging.info("Following sync location are available.\n\t{}".format(
+                '\n\t'.join(os.listdir(dir_profile))
+            ))
+            exit(0)
+
+        _dir_profile = "{}/{}".format(dir_profile, args.SYNCLOCAITON)
+        if not os.path.exists(_dir_profile):
+            logging.error("Invalid sync location name, valid names are:\n\t{}".format(
+                '\t\n'.join(os.listdir(dir_profile))))
+            exit(1)
+        else:
+            dir_profile = _dir_profile
 
         # sync given directory
         logging.info("Synchronizing directory")
-        sync(wk_conf_file,
-             dry_run=(self.send_test or self.get_test),
-             live=self.livesync,
-             reverse_direction=(self.get or self.get_test))
+        wk_conf_file = WK_CONF_FILE.format(dir_profile)
 
-    def register_directory(self, dir_profile, rsync_filter_file, wk_conf_file):
-        """
-        Configures a directory to work with drsync
-        :param dir_profile:
-        :param rsync_filter_file:
-        :param wk_conf_file:
-        """
+        sync(wk_conf_file,
+             dry_run=(args.sendtest or args.fetchtest),
+             live=args.livesync,
+             reverse_direction=(args.fetch or args.fetchtest))
+
+    def register_directory(self, args):
+        """Configures a directory to work with drsync."""
+        # Ask Questions and write wk sync conf file
+        working_dir = args.path
+        config = dict()
+        config['working_dir_parent'] = os.path.dirname(working_dir)
+        config['working_dir_name'] = os.path.split(working_dir)[-1]
+
+        host_path = raw_input(
+            'Enter <user>@<host>:<path>, where path is parent directory where directory to  be synced will be created:')
+
+        remote_host, remote_working_dir_parent = host_path.rsplit(':')
+        sync_task_name = raw_input("Enter a name which you would like to identify above path as sync_task:")
+
+        dir_profile = WK_SYN_DIR_FORMAT.format(
+            USER_HOME,
+            WK_BASE_DIR,
+            os.path.split(working_dir)[1],
+            hashlib.md5(working_dir).hexdigest()
+        )
+        dir_profile = "{}/{}".format(dir_profile, sync_task_name)
+
+        config['dir_profile'] = dir_profile
+        config['remote_host_name'] = remote_host
+        config['remote_working_dir_parent'] = remote_working_dir_parent
+
         # create directory
-        logging.info("Registering directory {0}".format(self.working_dir))
-        mkdir['-p', dir_profile]()
+        logging.info("Registering directory {} as sync task {}".format(working_dir, sync_task_name))
+        os.makedirs(dir_profile)
 
         # write rsync filter file
+        rsync_filter_file = WK_RSYNC_FILTER_FILE.format(dir_profile)
+        wk_conf_file = WK_CONF_FILE.format(dir_profile)
         logging.info('Writing filter file to {0}'.format(rsync_filter_file))
         with open(rsync_filter_file, 'w') as f:
             f.write(get_file_content('rsync_filter.txt'))
 
-        # Ask Questions and write wk sync conf file
-        config = dict()
-        config['dir_profile'] = dir_profile
-        config['working_dir_parent'] = os.path.dirname(self.working_dir)
-        config['working_dir_name'] = os.path.split(self.working_dir)[-1]
-
-        # ask questions to user
-        response = raw_input('Enter remote absolute path where data will sent/received:')
-        config['remote_working_dir_parent'] = os.path.abspath(response)
-        response = raw_input('Enter remote system hostname:')
-        config['remote_host_name'] = response
         logging.info("Writing configuration data to {0}".format(wk_conf_file))
         with open(wk_conf_file, 'w') as f:
             f.write(get_file_content('drsync_conf.txt').format(**config))
+
         logging.info(get_file_content('post_reg_msg.txt'))

@@ -4,10 +4,14 @@ Directory Sync (drsync) helps you keep two directories separated by network in s
  * Built to keep a portable development environment in mind and is greatly inspired by tools like ```git```, ```mercurial```
  * Two way on demand sync
  * Supports one way live stream of changes
+ * Support sync target alias to send/recieve data from mulitple locations
+
 
 # Use Case Solved
  1. Sync directory between two systems for developer working over VPN/low bandwidth network
  1. Keep a close to real time/ on demand backup of a directory somewhere remote
+ 1. Send data to multiple location
+ 1. Get data from multiple location
  
 # Install
     pip install drsync
