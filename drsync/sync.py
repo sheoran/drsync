@@ -126,7 +126,7 @@ def sync_helper():
                 return
 
             if filename == sync_local_path + sync_local_dir:
-                sync_all()
+                sync_all(False)
                 sync_file_change_list_queue.clear()
                 return
 

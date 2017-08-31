@@ -1,3 +1,5 @@
 .idea/
 *.pyc
 drsync.egg-info
+.DS_store
+dist
